@@ -132,7 +132,7 @@ final class DataStore: ObservableObject {
 
     // MARK: - Einzelne Withings-Abfragen
 
-    private func fetchActivity(from: Date, to: Date) async throws -> [WithingsActivityResponse.Body.Activity] {
+    private func fetchActivity(from: Date, to: Date) async throws -> [WithingsActivityResponse.Activity] {
         let df = DateFormatter(); df.dateFormat = "yyyy-MM-dd"
         let resp = try await withings.request(path: "/v2/measure", params: [
             "action": "getactivity",
@@ -143,7 +143,7 @@ final class DataStore: ObservableObject {
         return resp.body?.activities ?? []
     }
 
-    private func fetchSleep(from: Date, to: Date) async throws -> [WithingsSleepResponse.Body.Series] {
+    private func fetchSleep(from: Date, to: Date) async throws -> [WithingsSleepResponse.Series] {
         let resp = try await withings.request(path: "/v2/sleep", params: [
             "action": "getsummary",
             "startdateymd": iso(from),
@@ -153,7 +153,7 @@ final class DataStore: ObservableObject {
         return resp.body?.series ?? []
     }
 
-    private func fetchWorkouts(from: Date, to: Date) async throws -> [WithingsWorkoutResponse.Body.Series] {
+    private func fetchWorkouts(from: Date, to: Date) async throws -> [WithingsWorkoutResponse.Series] {
         let df = DateFormatter(); df.dateFormat = "yyyy-MM-dd"
         let resp = try await withings.request(path: "/v2/measure", params: [
             "action": "getworkouts",

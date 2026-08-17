@@ -49,7 +49,9 @@ enum WithingsMeasureType: Int {
 struct WithingsActivityResponse: Decodable {
     let status: Int
     let body: Body?
-    struct Body: Decodable { let activities: [Activity] }
+    struct Body: Decodable {
+        let activities: [Activity]
+    }
     struct Activity: Decodable {
         let date: String            // "yyyy-MM-dd"
         let steps: Int?
