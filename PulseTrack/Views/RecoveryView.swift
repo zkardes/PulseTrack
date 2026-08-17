@@ -1,11 +1,11 @@
 import SwiftUI
 
 struct RecoveryView: View {
-    @EnvironmentObject var health: HealthKitManager
+    @EnvironmentObject var store: DataStore
 
     private var recovery: Int {
-        guard let t = health.today else { return 0 }
-        return HealthAnalytics.recoveryScore(today: t, baseline: health.baseline)
+        guard let t = store.today else { return 0 }
+        return HealthAnalytics.recoveryScore(today: t, baseline: store.baseline)
     }
 
     var body: some View {
@@ -17,8 +17,8 @@ struct RecoveryView: View {
                                    color: Theme.Colors.recoveryZone(Double(recovery)),
                                    value: "\(recovery)%", label: "Recovery", size: 200)
                         HStack(spacing: 24) {
-                            baselineStat("HRV", health.today?.hrv, health.baseline.hrv, "ms")
-                            baselineStat("RHR", health.today?.restingHeartRate, health.baseline.restingHeartRate, "bpm")
+                            baselineStat("HRV", store.today?.hrv, store.baseline.hrv, "ms")
+                            baselineStat("RHR", store.today?.restingHeartRate, store.baseline.restingHeartRate, "bpm")
                         }
                     }.frame(maxWidth: .infinity)
                 }
@@ -31,25 +31,25 @@ struct RecoveryView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Card {
                     VStack(spacing: 14) {
-                        factor("Heart Rate Variability", health.today?.hrv, health.baseline.hrv, "ms", higherBetter: true)
+                        factor("Heart Rate Variability", store.today?.hrv, store.baseline.hrv, "ms", higherBetter: true)
                         Divider().overlay(Theme.Colors.stroke)
-                        factor("Resting Heart Rate", health.today?.restingHeartRate, health.baseline.restingHeartRate, "bpm", higherBetter: false)
+                        factor("Resting Heart Rate", store.today?.restingHeartRate, store.baseline.restingHeartRate, "bpm", higherBetter: false)
                         Divider().overlay(Theme.Colors.stroke)
-                        factor("Respiratory Rate", health.today?.respiratoryRate, health.baseline.respiratoryRate, "br/min", higherBetter: false)
+                        factor("Respiratory Rate", store.today?.respiratoryRate, store.baseline.respiratoryRate, "br/min", higherBetter: false)
                         Divider().overlay(Theme.Colors.stroke)
-                        factor("Blood Oxygen", health.today?.bloodOxygen, 97, "%", higherBetter: true)
+                        factor("Blood Oxygen", store.today?.bloodOxygen, 97, "%", higherBetter: true)
                     }
                 }
             }
             .padding(16)
         }
         .background(Theme.Colors.background.ignoresSafeArea())
-        .refreshable { await health.loadAll() }
+        .refreshable { await store.syncWithings() }
     }
 
     private var recoveryTrend: [Double] {
-        health.days.reversed().map {
-            Double(HealthAnalytics.recoveryScore(today: $0, baseline: health.baseline))
+        store.days.reversed().map {
+            Double(HealthAnalytics.recoveryScore(today: $0, baseline: store.baseline))
         }
     }
 

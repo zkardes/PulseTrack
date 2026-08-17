@@ -1,12 +1,12 @@
 import SwiftUI
 
 struct HeartView: View {
-    @EnvironmentObject var health: HealthKitManager
+    @EnvironmentObject var store: DataStore
 
-    private var today: DayMetrics? { health.today }
+    private var today: DayMetrics? { store.today }
     private var zones: [HeartRateZone: TimeInterval] {
         guard let today else { return [:] }
-        return HealthAnalytics.zoneDurations(samples: today.heartRateSamples, maxHR: health.maxHR)
+        return HealthAnalytics.zoneDurations(samples: today.heartRateSamples, maxHR: store.maxHR)
     }
 
     var body: some View {
@@ -36,7 +36,7 @@ struct HeartView: View {
                         Text("Est. Max HR").font(Theme.Typography.body)
                             .foregroundStyle(Theme.Colors.textSecondary)
                         Spacer()
-                        Text("\(Int(health.maxHR)) bpm").font(Theme.Typography.headline)
+                        Text("\(Int(store.maxHR)) bpm").font(Theme.Typography.headline)
                             .foregroundStyle(Theme.Colors.heart)
                     }
                 }
@@ -66,7 +66,7 @@ struct HeartView: View {
             .padding(16)
         }
         .background(Theme.Colors.background.ignoresSafeArea())
-        .refreshable { await health.loadAll() }
+        .refreshable { await store.syncWithings() }
     }
 
     private func hrStat(_ label: String, _ value: Double?, _ color: Color) -> some View {

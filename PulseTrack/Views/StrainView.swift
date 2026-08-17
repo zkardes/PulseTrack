@@ -1,12 +1,12 @@
 import SwiftUI
 
 struct StrainView: View {
-    @EnvironmentObject var health: HealthKitManager
+    @EnvironmentObject var store: DataStore
 
-    private var today: DayMetrics? { health.today }
+    private var today: DayMetrics? { store.today }
     private var strain: Double {
         guard let today else { return 0 }
-        return HealthAnalytics.strainScore(today: today, maxHR: health.maxHR)
+        return HealthAnalytics.strainScore(today: today, maxHR: store.maxHR)
     }
 
     var body: some View {
@@ -61,15 +61,15 @@ struct StrainView: View {
 
                 SectionHeader(title: "7-Day Strain").frame(maxWidth: .infinity, alignment: .leading)
                 Card {
-                    TrendBars(values: Array(health.days.prefix(7).reversed().map {
-                        HealthAnalytics.strainScore(today: $0, maxHR: health.maxHR)
+                    TrendBars(values: Array(store.days.prefix(7).reversed().map {
+                        HealthAnalytics.strainScore(today: $0, maxHR: store.maxHR)
                     }), color: Theme.Colors.strain)
                 }
             }
             .padding(16)
         }
         .background(Theme.Colors.background.ignoresSafeArea())
-        .refreshable { await health.loadAll() }
+        .refreshable { await store.syncWithings() }
     }
 
     private var strainMessage: String {

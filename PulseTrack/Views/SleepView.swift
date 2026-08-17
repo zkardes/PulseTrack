@@ -1,13 +1,13 @@
 import SwiftUI
 
 struct SleepView: View {
-    @EnvironmentObject var health: HealthKitManager
+    @EnvironmentObject var store: DataStore
 
-    private var sleep: SleepSummary? { health.today?.sleep }
+    private var sleep: SleepSummary? { store.today?.sleep }
     private var performance: Int {
         guard let sleep else { return 0 }
-        let prior = health.days.count > 1
-            ? HealthAnalytics.strainScore(today: health.days[1], maxHR: health.maxHR) : 0
+        let prior = store.days.count > 1
+            ? HealthAnalytics.strainScore(today: store.days[1], maxHR: store.maxHR) : 0
         return HealthAnalytics.sleepPerformance(sleep: sleep, priorStrain: prior)
     }
 
@@ -58,7 +58,7 @@ struct SleepView: View {
 
                 SectionHeader(title: "7-Day Sleep Duration").frame(maxWidth: .infinity, alignment: .leading)
                 Card {
-                    TrendBars(values: Array(health.days.prefix(7).reversed().map {
+                    TrendBars(values: Array(store.days.prefix(7).reversed().map {
                         ($0.sleep?.hoursAsleep ?? 0)
                     }), color: Theme.Colors.sleep)
                 }
@@ -66,7 +66,7 @@ struct SleepView: View {
             .padding(16)
         }
         .background(Theme.Colors.background.ignoresSafeArea())
-        .refreshable { await health.loadAll() }
+        .refreshable { await store.syncWithings() }
     }
 
     private func miniStat(_ label: String, _ value: String) -> some View {

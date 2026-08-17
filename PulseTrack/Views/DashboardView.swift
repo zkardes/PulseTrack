@@ -1,22 +1,22 @@
 import SwiftUI
 
 struct DashboardView: View {
-    @EnvironmentObject var health: HealthKitManager
+    @EnvironmentObject var store: DataStore
 
-    private var today: DayMetrics? { health.today }
+    private var today: DayMetrics? { store.today }
 
     private var recovery: Int {
         guard let today else { return 0 }
-        return HealthAnalytics.recoveryScore(today: today, baseline: health.baseline)
+        return HealthAnalytics.recoveryScore(today: today, baseline: store.baseline)
     }
     private var strain: Double {
         guard let today else { return 0 }
-        return HealthAnalytics.strainScore(today: today, maxHR: health.maxHR)
+        return HealthAnalytics.strainScore(today: today, maxHR: store.maxHR)
     }
     private var sleepPerf: Int {
         guard let sleep = today?.sleep else { return 0 }
-        let prior = health.days.count > 1
-            ? HealthAnalytics.strainScore(today: health.days[1], maxHR: health.maxHR) : 0
+        let prior = store.days.count > 1
+            ? HealthAnalytics.strainScore(today: store.days[1], maxHR: store.maxHR) : 0
         return HealthAnalytics.sleepPerformance(sleep: sleep, priorStrain: prior)
     }
 
@@ -84,7 +84,7 @@ struct DashboardView: View {
             .padding(16)
         }
         .background(Theme.Colors.background.ignoresSafeArea())
-        .refreshable { await health.loadAll() }
+        .refreshable { await store.syncWithings() }
     }
 
     private var header: some View {

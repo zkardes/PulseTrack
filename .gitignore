@@ -21,3 +21,6 @@ xcuserdata/
 # Secrets — never commit tokens or credentials
 *.token
 secrets*
+
+# Withings API credentials — enthält Client Secret, niemals committen!
+PulseTrack/Managers/WithingsConfig.swift

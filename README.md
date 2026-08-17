@@ -1,50 +1,53 @@
 # PulseTrack
 
-A sleek, Whoop-inspired health & fitness tracking app for iPhone — **no AI, all deterministic formulas**. It reads everything from Apple Health (including any sensors you've paired through Health: Apple Watch, chest straps, rings, etc.) and turns it into daily Recovery, Strain, Sleep and Heart Rate insights.
+Eine schlanke, Whoop-inspirierte Health- & Fitness-App für iPhone — **ohne KI, ohne Apple Health**. PulseTrack bezieht seine Daten aus zwei Quellen:
 
-## Features
+1. **Withings Cloud API** (OAuth2) — z. B. für die **Withings Scanwatch 2**: Aktivität, Schlaf, Herzfrequenz, SpO₂.
+2. **Bluetooth LE (Core Bluetooth)** — direkte Live-Verbindung zu Sensoren mit Standard-**Heart Rate Service (0x180D)**, z. B. GEOID-Tracker und Brustgurte.
 
-- **Recovery score (0–100)** — blends HRV (SDNN), resting heart rate, sleep quality, respiratory rate and blood oxygen against your personal 30-day rolling baseline.
-- **Day Strain (0–21)** — logarithmic cardiovascular load derived from time-in-heart-rate-zones + active energy.
-- **Sleep performance** — sleep stages (Deep/REM/Core/Awake), efficiency, and a strain-adjusted sleep-need model.
-- **Heart rate** — all-day min/avg/max, live graph, and 5 training zones (Tanaka max-HR estimate from your age).
-- **Vitals dashboard** — RHR, HRV, respiratory rate, SpO₂, active calories, steps.
-- **Trends** — 7- and 30-day history bars for every core metric.
-- Modern dark UI with metric rings, gradients and rounded typography.
+Daraus berechnet die App täglich Recovery, Belastung (Strain), Schlaf und Herzfrequenz-Insights — alles mit **deterministischen Formeln**, komplett auf dem Gerät.
 
-## Requirements
+## Kein bezahltes Apple-Programm nötig
 
-- macOS with **Xcode 16+**
-- iPhone running **iOS 17+** (HealthKit is not available in the Simulator for most data)
-- An Apple Developer account (free tier works for on-device testing)
+HealthKit wurde entfernt. Du brauchst **nur einen kostenlosen Apple-ID Developer Account** ("Personal Team") in Xcode, um die App auf deinem eigenen iPhone zu installieren. Einschränkungen der kostenlosen Variante: App läuft nur auf deinen Geräten und muss alle 7 Tage neu aus Xcode installiert werden.
+
+## Setup Withings API
+
+1. Registriere eine App unter https://developer.withings.com → Partner Hub → **Create an application** (Typ *Public API / Developer*). Der Login (z. B. per Apple ID) genügt **nicht** — du musst dort explizit eine App anlegen.
+2. Hinterlege als **Callback/Redirect URI**: `pulsetrack://withings-callback`
+3. Du erhältst **Client ID** und **Client Secret**.
+4. Trage beides in `PulseTrack/Managers/WithingsConfig.swift` ein (Vorlage: `WithingsConfig.example.txt`).
+
+⚠️ **Das Client Secret niemals committen.** `WithingsConfig.swift` steht bereits in `.gitignore`.
+
+## Bluetooth-Sensor koppeln
+
+Tab **Geräte** → **Sensoren suchen** → Gerät antippen. Es funktioniert jeder Sensor, der das standardisierte BLE Heart Rate Profil sendet. Die Withings Scanwatch 2 selbst sendet **kein** offenes BLE-Profil und läuft daher nur über die Cloud API.
 
 ## Build & Run
 
-1. Open `PulseTrack.xcodeproj` in Xcode.
-2. Select the **PulseTrack** target → Signing & Capabilities → choose your Team. The **HealthKit** capability and Health usage strings are already configured.
-3. Set the bundle identifier to something unique (default `com.zkardes.PulseTrack`).
-4. Plug in your iPhone, select it as the run destination, and press **Run**.
-5. On first launch, tap **Connect Apple Health** and grant read access.
+1. `PulseTrack.xcodeproj` in **Xcode 16+** öffnen.
+2. Target → Signing & Capabilities → dein (kostenloses) Team wählen. Es ist **keine** HealthKit-Capability nötig.
+3. iPhone (iOS 17+) anschließen, **Run**.
 
-## How the scores work
-
-All analytics live in `PulseTrack/Managers/HealthAnalytics.swift`. They are pure functions — rolling baselines and weighted models — so results are fully explainable and reproducible. No machine learning, no network calls, your data never leaves the device.
-
-## Project structure
+## Projektstruktur
 
 ```
 PulseTrack/
-├── PulseTrackApp.swift          # App entry
-├── DesignSystem/Theme.swift     # Colors, typography, layout
-├── Models/HealthModels.swift    # Data types
+├── PulseTrackApp.swift
+├── DesignSystem/Theme.swift
+├── Models/               # HealthModels, WithingsModels
 ├── Managers/
-│   ├── HealthKitManager.swift   # Reads all HealthKit data
-│   ├── HealthAnalytics.swift    # Scoring formulas
-│   ├── WorkoutType+Display.swift
+│   ├── WithingsConfig.swift    # (gitignored) Client ID & Secret
+│   ├── WithingsClient.swift    # OAuth2 + API
+│   ├── TokenStore.swift        # Keychain
+│   ├── BLEManager.swift        # Core Bluetooth
+│   ├── DataStore.swift         # Withings + BLE -> DayMetrics
+│   ├── HealthAnalytics.swift   # Score-Formeln (keine KI)
 │   └── Formatters.swift
-└── Views/                       # Dashboard, Recovery, Strain, Sleep, Heart
+└── Views/                # Dashboard, Recovery, Strain, Sleep, Heart, Settings
 ```
 
 ## Privacy
 
-PulseTrack only **reads** from Apple Health and processes everything locally. It never writes data back and makes no network requests.
+Alle Berechnungen laufen lokal. Withings-Tokens liegen im iOS Keychain. Es werden ausschließlich Requests an die Withings API gestellt; keine weiteren Server.

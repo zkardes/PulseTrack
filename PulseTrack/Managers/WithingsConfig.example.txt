@@ -1,0 +1,23 @@
+import Foundation
+
+/// Konfiguration für die Withings API. Trage hier deine Zugangsdaten ein,
+/// die du kostenlos unter https://developer.withings.com bekommst
+/// (Partner-App erstellen -> Client ID & Secret).
+enum WithingsConfig {
+    static let clientID     = "REPLACE_WITH_YOUR_CLIENT_ID"
+    static let clientSecret = "REPLACE_WITH_YOUR_CLIENT_SECRET"
+
+    /// Muss exakt mit der in deiner Withings-App hinterlegten Redirect-URI übereinstimmen.
+    static let redirectURI  = "pulsetrack://withings-callback"
+
+    /// Angeforderte Datenbereiche.
+    static let scope = "user.info,user.metrics,user.activity,user.sleepevents"
+
+    static let authorizeURL = "https://account.withings.com/oauth2_user/authorize2"
+    static let tokenURL     = "https://wbsapi.withings.net/v2/oauth2"
+    static let apiBase      = "https://wbsapi.withings.net"
+
+    static var isConfigured: Bool {
+        !clientID.hasPrefix("REPLACE") && !clientSecret.hasPrefix("REPLACE")
+    }
+}
