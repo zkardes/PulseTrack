@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSHealthShareUsageDescription</key>
+	<string>PulseTrack reads your heart rate, HRV, sleep, workouts and activity from Apple Health to calculate your recovery, strain and sleep insights.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>PulseTrack does not write data back to Apple Health.</string>
+	<key>UILaunchScreen</key>
+	<dict/>
+</dict>
+</plist>
