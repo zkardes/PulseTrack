@@ -29,6 +29,8 @@ struct MainTabView: View {
                 .tabItem { Label("Recovery", systemImage: "bolt.heart.fill") }
             StrainView()
                 .tabItem { Label("Belastung", systemImage: "flame.fill") }
+            WorkoutTrackingView()
+                .tabItem { Label("Workout", systemImage: "stopwatch.fill") }
             SleepView()
                 .tabItem { Label("Schlaf", systemImage: "moon.stars.fill") }
             HeartView()

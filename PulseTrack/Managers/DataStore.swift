@@ -9,6 +9,9 @@ final class DataStore: ObservableObject {
 
     let withings = WithingsClient()
     let ble = BLEManager()
+    lazy var workout: WorkoutSessionManager = {
+        WorkoutSessionManager(ble: ble, maxHR: { [weak self] in self?.maxHR ?? 190 })
+    }()
 
     @Published var days: [DayMetrics] = []
     @Published var isLoading = false
