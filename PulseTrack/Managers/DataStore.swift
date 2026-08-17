@@ -48,6 +48,7 @@ final class DataStore: ObservableObject {
             async let activity = fetchActivity(from: start, to: now)
             async let sleep    = fetchSleep(from: start, to: now)
             async let heart    = fetchHeartMeasures(from: start, to: now)
+            async let workouts = fetchWorkouts(from: start, to: now)
 
             var byDay: [Date: DayMetrics] = [:]
             func day(_ d: Date) -> Date { cal.startOfDay(for: d) }
@@ -97,6 +98,24 @@ final class DataStore: ObservableObject {
                 byDay[key] = m
             }
 
+            // Workouts
+            for w in try await workouts {
+                let startDate = Date(timeIntervalSince1970: TimeInterval(w.startdate))
+                let key = day(startDate)
+                var m = byDay[key] ?? DayMetrics(date: key)
+                let summary = WorkoutSummary(
+                    typeName: WithingsWorkoutType.name(w.category),
+                    symbol: WithingsWorkoutType.symbol(w.category),
+                    start: startDate,
+                    duration: TimeInterval(w.enddate - w.startdate),
+                    energyBurned: w.data?.calories,
+                    distance: w.data?.distance,
+                    avgHeartRate: w.data?.hr_average
+                )
+                m.workouts.append(summary)
+                byDay[key] = m
+            }
+
             // Sortiert, neuester Tag zuerst.
             var assembled = byDay.values.sorted { $0.date > $1.date }
             // Sicherstellen, dass heute existiert (für BLE-Live).
@@ -131,6 +150,17 @@ final class DataStore: ObservableObject {
             "enddateymd": iso(to),
             "data_fields": "deepsleepduration,lightsleepduration,remsleepduration,wakeupduration,durationtosleep,hr_average,rr_average,sleep_efficiency"
         ], as: WithingsSleepResponse.self)
+        return resp.body?.series ?? []
+    }
+
+    private func fetchWorkouts(from: Date, to: Date) async throws -> [WithingsWorkoutResponse.Body.Series] {
+        let df = DateFormatter(); df.dateFormat = "yyyy-MM-dd"
+        let resp = try await withings.request(path: "/v2/measure", params: [
+            "action": "getworkouts",
+            "startdateymd": df.string(from: from),
+            "enddateymd": df.string(from: to),
+            "data_fields": "calories,distance,hr_average,steps"
+        ], as: WithingsWorkoutResponse.self)
         return resp.body?.series ?? []
     }
 
